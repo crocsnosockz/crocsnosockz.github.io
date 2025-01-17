@@ -25,26 +25,26 @@
         // List of messages to cycle through
         const messages = ["Nyan", "Min Thu", "Arjun"];
 
-        // Function to calculate the message index based on Mondays passed
+        // Function to calculate the message index based on Mondays
         function getMessageIndex() {
-            const startDate = new Date("2025-01-15"); // Fixed start date (can be any recent Monday)
             const today = new Date();
-            
-            // Calculate the number of days since the start date
-            const daysSinceStart = Math.floor((today - startDate) / (1000 * 60 * 60 * 24));
-            
-            // Calculate the number of Mondays passed since the start date
-            const mondaysSinceStart = Math.floor(daysSinceStart / 7);
-            
+            const dayOfWeek = today.getDay(); // Sunday = 0, Monday = 1, ..., Saturday = 6
+
+            // Find the most recent Monday
+            const daysSinceMonday = (dayOfWeek + 6) % 7; // Adjust so Monday = 0
+            const lastMonday = new Date(today);
+            lastMonday.setDate(today.getDate() - daysSinceMonday);
+
+            // Fixed reference Monday to calculate weeks passed
+            const referenceMonday = new Date("2025-01-13"); // A known Monday
+            const weeksSinceReference = Math.floor((lastMonday - referenceMonday) / (1000 * 60 * 60 * 24 * 7));
+
             // Return the index of the message to display
-            return mondaysSinceStart % messages.length;
+            return (weeksSinceReference >= 0 ? weeksSinceReference : 0) % messages.length;
         }
 
         // Display the current message
         function displayMessage() {
-            const today = new Date();
-            
-            // If today is Monday or after, display the corresponding message
             const message = messages[getMessageIndex()];
             document.getElementById("message").textContent = message;
         }
