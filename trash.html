@@ -1,0 +1,56 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Dynamic Weekly Messages</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            text-align: center;
+            margin-top: 20%;
+            background-color: #eef2f3;
+            color: #333;
+        }
+        h1 {
+            font-size: 3em;
+            color: #007BFF;
+        }
+    </style>
+</head>
+<body>
+    <h1 id="message">Loading...</h1>
+
+    <script>
+        // List of messages to cycle through
+        const messages = ["Nyan", "Min Thu", "Arjun"];
+
+        // Function to calculate the message index based on Mondays passed
+        function getMessageIndex() {
+            const startDate = new Date("2025-01-15"); // Fixed start date (can be any recent Monday)
+            const today = new Date();
+            
+            // Calculate the number of days since the start date
+            const daysSinceStart = Math.floor((today - startDate) / (1000 * 60 * 60 * 24));
+            
+            // Calculate the number of Mondays passed since the start date
+            const mondaysSinceStart = Math.floor(daysSinceStart / 7);
+            
+            // Return the index of the message to display
+            return mondaysSinceStart % messages.length;
+        }
+
+        // Display the current message
+        function displayMessage() {
+            const today = new Date();
+            
+            // If today is Monday or after, display the corresponding message
+            const message = messages[getMessageIndex()];
+            document.getElementById("message").textContent = message;
+        }
+
+        // Call the function to update the message on page load
+        displayMessage();
+    </script>
+</body>
+</html>
