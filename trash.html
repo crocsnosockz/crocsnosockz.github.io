@@ -25,31 +25,55 @@
         // List of messages to cycle through
         const messages = ["Nyan", "Min Thu", "Arjun"];
 
-        // Function to calculate the message index based on Mondays
-        function getMessageIndex() {
-            const today = new Date();
-            const dayOfWeek = today.getDay(); // Sunday = 0, Monday = 1, ..., Saturday = 6
+        // Function to fetch the current time in PST from an API
+        async function getPSTTime() {
+            const response = await fetch("https://worldtimeapi.org/api/timezone/America/Los_Angeles");
+            const data = await response.json();
+            return new Date(data.datetime); // Returns current PST time as a Date object
+        }
 
-            // Find the most recent Monday
+        // Get the most recent Monday based on PST time
+        function getMostRecentMonday(date) {
+            const dayOfWeek = date.getDay(); // Sunday = 0, Monday = 1, ..., Saturday = 6
             const daysSinceMonday = (dayOfWeek + 6) % 7; // Adjust so Monday = 0
-            const lastMonday = new Date(today);
-            lastMonday.setDate(today.getDate() - daysSinceMonday);
-
-            // Fixed reference Monday to calculate weeks passed
-            const referenceMonday = new Date("2025-01-13"); // A known Monday
-            const weeksSinceReference = Math.floor((lastMonday - referenceMonday) / (1000 * 60 * 60 * 24 * 7));
-
-            // Return the index of the message to display
-            return (weeksSinceReference >= 0 ? weeksSinceReference : 0) % messages.length;
+            const lastMonday = new Date(date);
+            lastMonday.setDate(date.getDate() - daysSinceMonday);
+            lastMonday.setHours(0, 0, 0, 0); // Set time to midnight
+            return lastMonday.getTime();
         }
 
-        // Display the current message
-        function displayMessage() {
-            const message = messages[getMessageIndex()];
-            document.getElementById("message").textContent = message;
+        // Display the correct message
+        async function displayMessage() {
+            try {
+                const pstTime = await getPSTTime();
+                const lastMondayTimestamp = getMostRecentMonday(pstTime);
+
+                // Retrieve the saved timestamp and index from localStorage
+                const savedData = JSON.parse(localStorage.getItem("messageData"));
+                let lastSavedMonday = savedData?.lastMonday || 0;
+                let currentIndex = savedData?.index || 0;
+
+                // If it's a new week (lastMonday has changed), update the index
+                if (lastMondayTimestamp > lastSavedMonday) {
+                    currentIndex = (currentIndex + 1) % messages.length;
+                    lastSavedMonday = lastMondayTimestamp;
+
+                    // Save the updated data in localStorage
+                    localStorage.setItem(
+                        "messageData",
+                        JSON.stringify({ lastMonday: lastSavedMonday, index: currentIndex })
+                    );
+                }
+
+                // Display the current message
+                document.getElementById("message").textContent = messages[currentIndex];
+            } catch (error) {
+                document.getElementById("message").textContent = "Error fetching time!";
+                console.error("Failed to fetch PST time:", error);
+            }
         }
 
-        // Call the function to update the message on page load
+        // Call the function to display the message
         displayMessage();
     </script>
 </body>
